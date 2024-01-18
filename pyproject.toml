@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "escriptorium-transcribir"
+version = "0.1.0"
+description = ""
+authors = ["apjanco <apjanco@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+transcribir = "escriptorium_vision.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+typer = {extras = ["all"], version = "^0.9.0"}
+google-api-python-client = "^2.114.0"
+pathlib = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

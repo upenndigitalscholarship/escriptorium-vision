@@ -12,6 +12,7 @@ from io import BytesIO
 import zipfile
 from PIL import Image
 import base64
+from xml.etree.ElementTree import Element, SubElement, tostring, fromstring
 
 app = typer.Typer()
 
@@ -59,6 +60,7 @@ def main():
         parts = E.get_document_parts(document.pk)
         for page in parts.results:
             filename = page.filename
+            xml_filename = filename.split('.')[0] + '.xml'
             img_binary = E.get_document_part_image(document.pk, page.pk)
             #convert img_binary to jpg and base64
             # It is important to use the part image because the alto line coordinates are based on this file, not the jpg thumbnail
@@ -75,13 +77,9 @@ def main():
             with ZipFile(BytesIO(alto_xml)) as z:
                 with z.open(z.namelist()[0]) as f:
                     alto_xml = f.read()
-            alto = tostring(alto_xml, encoding='unicode')
-            with open('alto-original.xml', 'w') as f:
-                f.write(alto)   
+            
             merged = merge_vision_alto(vision_response,alto_xml)
-            print(merged)  
-
-            #upload_part_transcription(document_pk: int, transcription_name: str, filename: str, file_data: BytesIO, override: str = "off",)        
+            E.upload_part_transcription(document.pk,'vision',xml_filename,merged) #(document.pk, transcription_name: str, filename: str, file_data: BytesIO)        
     else:
         print("💀 Please enter a number")
     

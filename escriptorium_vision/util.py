@@ -142,8 +142,13 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
     # read the alto xml into an ElementTree
     #alto = etree.XML(alto_xml)
     alto = fromstring(alto_xml)
+    # get filename from alto xml
+    filename = alto.find('.//{http://www.loc.gov/standards/alto/ns-v4#}fileName').text
+    filename = filename.split('/')[-1]
     # find all TextLine elements 
     text_lines = alto.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}TextLine')
+    # TODO remove duplicate TextLine elements
+    
     for line in text_lines:
         line_attrib = line.attrib #{'ID': 'eSc_line_3f31ece7', 'TAGREFS': 'LT15', 'BASELINE': '1029 797 2255 780', 'HPOS': '1026', 'VPOS': '724', 'WIDTH': '1229', 'HEIGHT': '118'}
         id = line_attrib.get('ID',None)
@@ -167,10 +172,10 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
             # add new string element to alto_line
             SubElement(alto_line, 'String', {'CONTENT': string['content'], 'HPOS': str(string['hpos']), 'VPOS': str(string['vpos']), 'WIDTH': str(string['width']), 'HEIGHT': str(string['height'])})
     # save alto to disk 
-    alto = tostring(alto, encoding='unicode')
-    with open('alto-vision.xml', 'w') as f:
-        f.write(alto)        
-    return tostring(alto, encoding='unicode')
+    alto = b'<?xml version="1.0" encoding="UTF-8"?>' + tostring(alto, encoding='unicode').encode('utf-8').replace(b'ns0:',b'').replace(b':ns0',b'')
+    Path(f'{filename}.xml').write_bytes(alto)
+            
+    return alto
 
 def push_new_transcription():
     """

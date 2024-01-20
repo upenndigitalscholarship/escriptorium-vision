@@ -99,7 +99,43 @@ def vision_to_alto(filename:str, response:json):
     # Output the ALTO XML document
     return tostring(alto, encoding='unicode')
 
+def get_strings_for_alto_line(vision_response:json,hpos:int,vpos:int,width:int,height:int):
+    """
+    Given a vision response and the coordinates of an ALTO text line, return a list of ALTO String elements that fit within the line.
+    Each ALTO String element is a single word.
+    HPOS = Horizontal (x) position upper/left corner
+    VPOS = Vertical (y) position upper/left corner
+    """
+    # create a list of all the words within the line coordinates
+    line_x_min = hpos
+    line_x_max = hpos + width
+    line_y_min = vpos
+    line_y_max = vpos + height
+
+    line_words = []
+    for response in vision_response['responses']:
+        for i, annotation in enumerate(response['textAnnotations']):
+            if i == 0:
+                full_text = annotation.get('description', None)
+                language = annotation.get('locale', None)
+            else:
+                text = annotation.get('description', None)
+                # The bounding box for the word. The vertices are in the order of top-left, top-right, bottom-right, bottom-left.
+                # https://cloud.google.com/distributed-cloud/hosted/docs/latest/gdch/apis/vertex-ai/ocr/rpc/google.cloud.vision.v1
+                boundingbox = annotation.get('boundingPoly', None) #'boundingPoly': {'vertices': [{'x': 22, 'y': 453}, {'x': 22, 'y': 342}, {'x': 39, 'y': 342}, {'x': 39, 'y': 453}]}
+                word_x_min = boundingbox['vertices'][0]['x']
+                word_x_max = boundingbox['vertices'][1]['x']
+                word_y_min = boundingbox['vertices'][0]['y']
+                word_y_max = boundingbox['vertices'][2]['y']\
+                # if the word is within the line coordinates, add it to the list of words
+                if word_x_min >= line_x_min and word_x_max <= line_x_max and word_y_min >= line_y_min and word_y_max <= line_y_max:
+                    line_words.append({'text':text, 'bbox':boundingbox})
+                
+
+
 def merge_vision_alto(vision_response:json, alto_xml:str):
+    #TODO assert that dimentions of alto xml and vision response are the same, necessary to compare coordinates
+
     # read the alto xml into an ElementTree
     alto = etree.XML(alto_xml)
     # find all TextLine elements 
@@ -113,9 +149,24 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
         width = line_attrib.get('WIDTH',None)
         height = line_attrib.get('HEIGHT',None)
         text = line.text
-        strings = line.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}String')
 
-   
+        # remove any existing String elements from the TextLine 
+        # <String CONTENT="Par " HPOS="220" VPOS="369" WIDTH="3" HEIGHT="22" />
+        strings = line.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}String')
+        for string in strings:
+            line.remove(string)
+
+        # add new String elements from the vision response
+        line_strings_with_vision_text = get_strings_for_alto_line(vision_response,hpos,vpos,width,height) 
+
+
+def push_new_transcription():
+    """
+    Create a new transcription in eScriptorium for the document and upload the updated ALTO XML file.
+    """
+   pass
+
+
 # <TextBlock>
 # <TextLine>
 # <String/>

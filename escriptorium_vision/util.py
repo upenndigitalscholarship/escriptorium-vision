@@ -1,14 +1,13 @@
 import json
+from lxml import etree
 from xml.etree.ElementTree import Element, SubElement, tostring
 import base64
 from googleapiclient.discovery import build
 from pathlib import Path
 import os 
+from io import StringIO, BytesIO
 
-def vision(file:str, APIKEY:str, type_:str = 'DOCUMENT_TEXT_DETECTION', language:str = 'es'):
-    image = Path(file).read_bytes()
-
-    image_content = base64.b64encode(image)
+def vision(image_content:str, APIKEY:str, type_:str = 'DOCUMENT_TEXT_DETECTION', language:str = 'es'):
     vservice = build('vision', 'v1', developerKey=APIKEY)
     language = language
     request = vservice.images().annotate(body={
@@ -99,6 +98,35 @@ def vision_to_alto(filename:str, response:json):
         
     # Output the ALTO XML document
     return tostring(alto, encoding='unicode')
+
+def merge_vision_alto(vision_response:json, alto_xml:str):
+    # read the alto xml into an ElementTree
+    alto = etree.XML(alto_xml)
+    # find all TextLine elements 
+    text_lines = alto.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}TextLine')
+    for line in text_lines:
+        line_attrib = line.attrib #{'ID': 'eSc_line_3f31ece7', 'TAGREFS': 'LT15', 'BASELINE': '1029 797 2255 780', 'HPOS': '1026', 'VPOS': '724', 'WIDTH': '1229', 'HEIGHT': '118'}
+        id = line_attrib.get('ID',None)
+        baseline = line_attrib.get('BASELINE',None)
+        hpos = line_attrib.get('HPOS',None) # Horizontal position upper/left corner (1/10 mm) 
+        vpos = line_attrib.get('VPOS',None) # Vertical position upper/left corner (1/10 mm) 
+        width = line_attrib.get('WIDTH',None)
+        height = line_attrib.get('HEIGHT',None)
+        text = line.text
+        strings = line.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}String')
+
+   
+# <TextBlock>
+# <TextLine>
+# <String/>
+# <SP/>
+# <HYP/>
+# </TextLine>
+# </TextBlock>
+      
+    print('text lines', text_lines)
+    return None
+
 
 if __name__ == '__main__':
     filepath = '/home/apjanco/Pictures/SM_NPQ_C01_006_1.jpg'

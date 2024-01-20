@@ -75,6 +75,9 @@ def main():
             with ZipFile(BytesIO(alto_xml)) as z:
                 with z.open(z.namelist()[0]) as f:
                     alto_xml = f.read()
+            alto = tostring(alto_xml, encoding='unicode')
+            with open('alto-original.xml', 'w') as f:
+                f.write(alto)   
             merged = merge_vision_alto(vision_response,alto_xml)
             print(merged)  
 

@@ -166,7 +166,10 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
         for string in line_strings:
             # add new string element to alto_line
             SubElement(alto_line, 'String', {'CONTENT': string['content'], 'HPOS': str(string['hpos']), 'VPOS': str(string['vpos']), 'WIDTH': str(string['width']), 'HEIGHT': str(string['height'])})
-
+    # save alto to disk 
+    alto = tostring(alto, encoding='unicode')
+    with open('alto-vision.xml', 'w') as f:
+        f.write(alto)        
     return tostring(alto, encoding='unicode')
 
 def push_new_transcription():

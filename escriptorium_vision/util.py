@@ -153,10 +153,10 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
         line_attrib = line.attrib #{'ID': 'eSc_line_3f31ece7', 'TAGREFS': 'LT15', 'BASELINE': '1029 797 2255 780', 'HPOS': '1026', 'VPOS': '724', 'WIDTH': '1229', 'HEIGHT': '118'}
         id = line_attrib.get('ID',None)
         baseline = line_attrib.get('BASELINE',None)
-        hpos = int(line_attrib.get('HPOS',None)) # Horizontal position upper/left corner (1/10 mm) 
-        vpos = int(line_attrib.get('VPOS',None)) # Vertical position upper/left corner (1/10 mm) 
-        width = int(line_attrib.get('WIDTH',None))
-        height = int(line_attrib.get('HEIGHT',None))
+        hpos = int(float(line_attrib.get('HPOS',None))) # Horizontal position upper/left corner (1/10 mm) 
+        vpos = int(float(line_attrib.get('VPOS',None))) # Vertical position upper/left corner (1/10 mm) 
+        width = int(float(line_attrib.get('WIDTH',None)))
+        height = int(float(line_attrib.get('HEIGHT',None)))
         text = line.text
 
         # remove any existing String elements from the TextLine 

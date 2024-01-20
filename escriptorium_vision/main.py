@@ -31,62 +31,62 @@ def main():
         srsly.write_json("secrets.json", secrets)
 
     # using the eScriporium info, fetch as list of documents
-    try: 
-        E = EscriptoriumConnector(secrets['ESCRIPTORIUM_URL'], secrets['ESCRIPTORIUM_USERNAME'], secrets['ESCRIPTORIUM_PASSWORD'])
-        documents = E.get_documents()
+     
+    E = EscriptoriumConnector(secrets['ESCRIPTORIUM_URL'], secrets['ESCRIPTORIUM_USERNAME'], secrets['ESCRIPTORIUM_PASSWORD'])
+    documents = E.get_documents()
+    
+    # create a menu for the user to select a document from the results
+    document_names = [d.name for d in documents.results]
+    for i, name in enumerate(document_names):
+        print(f"[bold green_yellow]{i}[/bold green_yellow] [bold white]{name}[/bold white]")
+    document_name = typer.prompt("Please select a document to transcribe")
+    # if the user enters a number, use that to select the document
+    if document_name.isdigit():
+        document = documents.results[int(document_name)]
+        print(f"[bold green_yellow] 🤩 Transcribing {document.name}...[/bold green_yellow]")
         
-        # create a menu for the user to select a document from the results
-        document_names = [d.name for d in documents.results]
-        for i, name in enumerate(document_names):
-            print(f"[bold green_yellow]{i}[/bold green_yellow] [bold white]{name}[/bold white]")
-        document_name = typer.prompt("Please select a document to transcribe")
-        # if the user enters a number, use that to select the document
-        if document_name.isdigit():
-            document = documents.results[int(document_name)]
-            print(f"[bold green_yellow] 🤩 Transcribing {document.name}...[/bold green_yellow]")
-            
-            # Select relevant transcription/segmentation to process
-            transcriptions = E.get_document_transcriptions(document.pk)
-            # prompt user to select a transcription
-            for i, t in enumerate(transcriptions):
-                print(f"[bold green_yellow]{i}[/bold green_yellow] [bold white]{t.name}[/bold white]")
-            transcription_name = typer.prompt("Please select a transcription to transcribe")
-            if transcription_name.isdigit():
-                transcription_pk = transcriptions[int(transcription_name)].pk
-                transcription_name = transcriptions[int(transcription_name)].name
-        
-            # Process each page of the selected document
-            parts = E.get_document_parts(document.pk)
-            for page in parts.results:
-                filename = page.filename
-                img_binary = E.get_document_part_image(document.pk, page.pk)
-                #convert img_binary to jpg and base64
-                # It is important to use the part image because the alto line coordinates are based on this file, not the jpg thumbnail
-                img = Image.open(io.BytesIO(img_binary))
-                rgb_im = img.convert("RGB")
-                img_byte_arr = io.BytesIO()
-                rgb_im.save(img_byte_arr, format='JPEG')
-                image_content = base64.b64encode(img_byte_arr.getvalue())
-                vision_response = vision(image_content,secrets['VISION_KEY'])
+        # Select relevant transcription/segmentation to process
+        transcriptions = E.get_document_transcriptions(document.pk)
+        # prompt user to select a transcription
+        for i, t in enumerate(transcriptions):
+            print(f"[bold green_yellow]{i}[/bold green_yellow] [bold white]{t.name}[/bold white]")
+        transcription_name = typer.prompt("Please select a transcription to transcribe")
+        if transcription_name.isdigit():
+            transcription_pk = transcriptions[int(transcription_name)].pk
+            transcription_name = transcriptions[int(transcription_name)].name
+    
+        # Process each page of the selected document
+        parts = E.get_document_parts(document.pk)
+        for page in parts.results:
+            filename = page.filename
+            img_binary = E.get_document_part_image(document.pk, page.pk)
+            #convert img_binary to jpg and base64
+            # It is important to use the part image because the alto line coordinates are based on this file, not the jpg thumbnail
+            img = Image.open(io.BytesIO(img_binary))
+            rgb_im = img.convert("RGB")
+            img_byte_arr = io.BytesIO()
+            rgb_im.save(img_byte_arr, format='JPEG')
+            image_content = base64.b64encode(img_byte_arr.getvalue())
+            vision_response = vision(image_content,secrets['VISION_KEY'])
 
-                # get the alto xml for the page
-                alto_xml = E.download_part_alto_transcription(document.pk,page.pk,transcription_pk)
-                #You will need to unzip these bytes in order to access the XML data (zipfile can do this).
-                with ZipFile(BytesIO(alto_xml)) as z:
-                    with z.open(z.namelist()[0]) as f:
-                        alto_xml = f.read()
-                merged = merge_vision_alto(vision_response,alto_xml)
-                #print(filename, img_src, type(img_binary),alto_xml)  
+            # get the alto xml for the page
+            alto_xml = E.download_part_alto_transcription(document.pk,page.pk,transcription_pk)
+            #You will need to unzip these bytes in order to access the XML data (zipfile can do this).
+            with ZipFile(BytesIO(alto_xml)) as z:
+                with z.open(z.namelist()[0]) as f:
+                    alto_xml = f.read()
+            merged = merge_vision_alto(vision_response,alto_xml)
+            print(merged)  
 
-                #upload_part_transcription(document_pk: int, transcription_name: str, filename: str, file_data: BytesIO, override: str = "off",)        
-        else:
-            print("💀 Please enter a number")
-        
+            #upload_part_transcription(document_pk: int, transcription_name: str, filename: str, file_data: BytesIO, override: str = "off",)        
+    else:
+        print("💀 Please enter a number")
+    
             
         
-    except Exception as e:
-        print(f"[bold purple] 💀 Error connecting to Escriptorium: {e}[/bold purple] Please check that your login information is correct.")
-        raise typer.Exit(code=1)
+    # except Exception as e:
+    #     print(f"[bold purple] 💀 Error: {e}[/bold purple]")
+    #     raise typer.Exit(code=1)
     
 def old_main(path: str = typer.Argument(..., help="Path to the image file"), apikey: str = typer.Option(..., envvar="VISION_KEY", help="Google Vision API Key")):
     """

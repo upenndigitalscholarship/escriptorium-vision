@@ -1,6 +1,5 @@
 import json
-from lxml import etree
-from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.etree.ElementTree import Element, SubElement, tostring, fromstring
 import base64
 from googleapiclient.discovery import build
 from pathlib import Path
@@ -106,7 +105,7 @@ def get_strings_for_alto_line(vision_response:json,hpos:int,vpos:int,width:int,h
     HPOS = Horizontal (x) position upper/left corner
     VPOS = Vertical (y) position upper/left corner
     """
-    # create a list of all the words within the line coordinates
+    
     line_x_min = hpos
     line_x_max = hpos + width
     line_y_min = vpos
@@ -141,17 +140,18 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
     #TODO assert that dimentions of alto xml and vision response are the same, necessary to compare coordinates
 
     # read the alto xml into an ElementTree
-    alto = etree.XML(alto_xml)
+    #alto = etree.XML(alto_xml)
+    alto = fromstring(alto_xml)
     # find all TextLine elements 
     text_lines = alto.findall('.//{http://www.loc.gov/standards/alto/ns-v4#}TextLine')
     for line in text_lines:
         line_attrib = line.attrib #{'ID': 'eSc_line_3f31ece7', 'TAGREFS': 'LT15', 'BASELINE': '1029 797 2255 780', 'HPOS': '1026', 'VPOS': '724', 'WIDTH': '1229', 'HEIGHT': '118'}
         id = line_attrib.get('ID',None)
         baseline = line_attrib.get('BASELINE',None)
-        hpos = line_attrib.get('HPOS',None) # Horizontal position upper/left corner (1/10 mm) 
-        vpos = line_attrib.get('VPOS',None) # Vertical position upper/left corner (1/10 mm) 
-        width = line_attrib.get('WIDTH',None)
-        height = line_attrib.get('HEIGHT',None)
+        hpos = int(line_attrib.get('HPOS',None)) # Horizontal position upper/left corner (1/10 mm) 
+        vpos = int(line_attrib.get('VPOS',None)) # Vertical position upper/left corner (1/10 mm) 
+        width = int(line_attrib.get('WIDTH',None))
+        height = int(line_attrib.get('HEIGHT',None))
         text = line.text
 
         # remove any existing String elements from the TextLine 
@@ -162,15 +162,18 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
 
         # add new String elements from the vision response
         line_strings = get_strings_for_alto_line(vision_response,hpos,vpos,width,height) 
+        alto_line = alto.find('.//{http://www.loc.gov/standards/alto/ns-v4#}TextLine' + f'[@ID="{id}"]')
         for string in line_strings:
-            string_element = SubElement(line, 'String', {'CONTENT': string['content'], 'HPOS': str(string['hpos']), 'VPOS': str(string['vpos']), 'WIDTH': str(string['width']), 'HEIGHT': str(string['height'])})
+            # add new string element to alto_line
+            SubElement(alto_line, 'String', {'CONTENT': string['content'], 'HPOS': str(string['hpos']), 'VPOS': str(string['vpos']), 'WIDTH': str(string['width']), 'HEIGHT': str(string['height'])})
+
     return tostring(alto, encoding='unicode')
 
 def push_new_transcription():
     """
     Create a new transcription in eScriptorium for the document and upload the updated ALTO XML file.
     """
-   pass
+    pass
 
 
 # <TextBlock>

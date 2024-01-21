@@ -6,7 +6,7 @@ authors = ["apjanco <apjanco@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-transcribir = "escriptorium_vision.main:app"
+transcribe = "escriptorium_vision.main:app"
 
 [tool.poetry.dependencies]
 python = "^3.10"

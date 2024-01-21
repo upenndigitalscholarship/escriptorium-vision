@@ -1,6 +1,6 @@
 # <img height="30px" src="moon-mustache.png" /> eScriptorium-Vision 
 
-This is a command line tool that uses Google Vision to perform HTR on images in eScriptorium. You will need to upload your images to eScriptorium first and run segmentation. We recommend that you manually correct segmentation in eScriptorium. Then this tool will then fetch the images and segmentation from eScriptorium, run HTR on the images, and upload the transcriptions back to eScriptorium. Doing this process can significantly reduce the amount of time needed to transcribe a document. Rather than adding text manually, you can upload an automatic transcription and then correct it in eScriptorium.  
+This is a command line tool that uses Google Vision to perform HTR on images in eScriptorium. You will need to upload your images to eScriptorium first and run segmentation. We recommend that you manually correct segmentation in eScriptorium. Then this tool can fetch the images and segmentation from eScriptorium, run HTR on the images, and upload the transcriptions back to eScriptorium. Doing this process can significantly reduce the amount of time needed to transcribe a document. Rather than adding text manually, you can upload an automatic transcription and then correct it in eScriptorium.  
 
 Please note that you will need to create an account for Google Vision and this is a paid and proprietary product. You will also need an existing account on an eScriptorium instance. See the instructions below for more information.
 

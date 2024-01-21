@@ -122,15 +122,19 @@ def get_strings_for_alto_line(vision_response:json,hpos:int,vpos:int,width:int,h
                 # The bounding box for the word. The vertices are in the order of top-left, top-right, bottom-right, bottom-left.
                 # https://cloud.google.com/distributed-cloud/hosted/docs/latest/gdch/apis/vertex-ai/ocr/rpc/google.cloud.vision.v1
                 boundingbox = annotation.get('boundingPoly', None) #'boundingPoly': {'vertices': [{'x': 22, 'y': 453}, {'x': 22, 'y': 342}, {'x': 39, 'y': 342}, {'x': 39, 'y': 453}]}
-                word_x_min = boundingbox['vertices'][0]['x'] if boundingbox['vertices'][0]['x'] < boundingbox['vertices'][3]['x'] else boundingbox['vertices'][3]['x']
-                word_x_max = boundingbox['vertices'][1]['x'] if boundingbox['vertices'][1]['x'] > boundingbox['vertices'][2]['x'] else boundingbox['vertices'][2]['x']
-                word_y_min = boundingbox['vertices'][0]['y'] if boundingbox['vertices'][0]['y'] < boundingbox['vertices'][1]['y'] else boundingbox['vertices'][1]['y']
-                word_y_max = boundingbox['vertices'][2]['y'] if boundingbox['vertices'][2]['y'] > boundingbox['vertices'][3]['y'] else boundingbox['vertices'][3]['y']
-                # if the word is within the line coordinates, add it to the list of words
-                if word_x_min >= line_x_min and word_x_max <= line_x_max and word_y_min >= line_y_min and word_y_max <= line_y_max:
-                    # <String CONTENT="Par " HPOS="220" VPOS="369" WIDTH="3" HEIGHT="22" />
-                    line_words.append({'content':text,'hpos':word_x_min,'vpos':word_y_min,'width':word_x_max-word_x_min,'height':word_y_max-word_y_min})
-                
+                try:
+                    word_x_min = boundingbox['vertices'][0]['x'] if boundingbox['vertices'][0]['x'] < boundingbox['vertices'][3]['x'] else boundingbox['vertices'][3]['x']
+                    word_x_max = boundingbox['vertices'][1]['x'] if boundingbox['vertices'][1]['x'] > boundingbox['vertices'][2]['x'] else boundingbox['vertices'][2]['x']
+                    word_y_min = boundingbox['vertices'][0]['y'] if boundingbox['vertices'][0]['y'] < boundingbox['vertices'][1]['y'] else boundingbox['vertices'][1]['y']
+                    word_y_max = boundingbox['vertices'][2]['y'] if boundingbox['vertices'][2]['y'] > boundingbox['vertices'][3]['y'] else boundingbox['vertices'][3]['y']
+                    # if the word is within the line coordinates, add it to the list of words
+                    if word_x_min >= line_x_min and word_x_max <= line_x_max and word_y_min >= line_y_min and word_y_max <= line_y_max:
+                        # <String CONTENT="Par " HPOS="220" VPOS="369" WIDTH="3" HEIGHT="22" />
+                        line_words.append({'content':text,'hpos':word_x_min,'vpos':word_y_min,'width':word_x_max-word_x_min,'height':word_y_max-word_y_min})
+                except: 
+                    #One or more x and/or y coordinates may not be generated in the BoundingPoly
+                    #https://stackoverflow.com/questions/39378862/incomplete-coordinate-values-for-google-vision-ocr
+                    pass                
     # sort the words by x coordinate
     line_words = sorted(line_words, key=lambda k: k['hpos'])
     return line_words
@@ -172,9 +176,7 @@ def merge_vision_alto(vision_response:json, alto_xml:str):
             # add new string element to alto_line
             SubElement(alto_line, 'String', {'CONTENT': string['content'], 'HPOS': str(string['hpos']), 'VPOS': str(string['vpos']), 'WIDTH': str(string['width']), 'HEIGHT': str(string['height'])})
     # save alto to disk 
-    alto = b'<?xml version="1.0" encoding="UTF-8"?>' + tostring(alto, encoding='unicode').encode('utf-8').replace(b'ns0:',b'').replace(b':ns0',b'')
-    Path(f'{filename}.xml').write_bytes(alto)
-            
+    alto = b'<?xml version="1.0" encoding="UTF-8"?>' + tostring(alto, encoding='unicode').encode('utf-8').replace(b'ns0:',b'').replace(b':ns0',b'')        
     return alto
 
 def push_new_transcription():

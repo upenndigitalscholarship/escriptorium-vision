@@ -1,7 +1,7 @@
 import typer
 from pathlib import Path
-#from rich import print
-#from rich.progress import Progress, SpinnerColumn, TextColumn, track
+from rich import print
+from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import srsly 
 from util import vision, lines_from_paragraphs, find_next_word, vision_to_alto
 from escriptorium_connector import EscriptoriumConnector
@@ -13,22 +13,31 @@ import zipfile
 from PIL import Image
 import base64
 from xml.etree.ElementTree import Element, SubElement, tostring, fromstring
+import getpass
+
+
 
 app = typer.Typer()
 
-def main(): 
+# add optional argument for --clear-secrets
+def main(clear_secrets: bool = typer.Option(False)): 
     """
     🤩 escriptorium-vision 🤩
     A CLI for using Google Vision API to extract text from images and create ALTO XML files.
     """
+    if clear_secrets:
+        if Path("secrets.json").exists():
+            Path("secrets.json").unlink()
+            print("🤩 secrets.json cleared 🤩")
+            
     if Path("secrets.json").exists():
         secrets = srsly.read_json("secrets.json")
     else:
         secrets = {}
-        secrets['VISION_KEY'] = input("Please enter your Google Vision API Key: ")
+        secrets['VISION_KEY'] = getpass.getpass("Please enter your Google Vision API Key: ")
         secrets['ESCRIPTORIUM_URL'] = input("Please enter your Escriptorium Url: ") or 'https://escriptorium.pennds.org/'
         secrets['ESCRIPTORIUM_USERNAME'] = input("Please enter your Escriptorium Username: ") or 'invitado'
-        secrets['ESCRIPTORIUM_PASSWORD'] = input("Please enter your Escriptorium Password: ")
+        secrets['ESCRIPTORIUM_PASSWORD'] = getpass.getpass('Please enter your Escriptorium Password:')
         srsly.write_json("secrets.json", secrets)
 
     # using the eScriporium info, fetch as list of documents
@@ -46,19 +55,15 @@ def main():
         document = documents.results[int(document_name)]
         print(f"[bold green_yellow] 🤩 Transcribing {document.name}...[/bold green_yellow]")
         
-        # Select relevant transcription/segmentation to process
+        # Get id for manual transcription. Segmentation is the same, so just need the pk
         transcriptions = E.get_document_transcriptions(document.pk)
-        # prompt user to select a transcription
-        for i, t in enumerate(transcriptions):
-            print(f"[bold green_yellow]{i}[/bold green_yellow] [bold white]{t.name}[/bold white]")
-        transcription_name = typer.prompt("Please select a transcription to transcribe")
-        if transcription_name.isdigit():
-            transcription_pk = transcriptions[int(transcription_name)].pk
-            transcription_name = transcriptions[int(transcription_name)].name
-    
+        manual = [t for t in transcriptions if t.name == 'manual']
+        if manual:
+            transcription_pk = manual[0].pk
+        
         # Process each page of the selected document
         parts = E.get_document_parts(document.pk)
-        for page in parts.results:
+        for page in track(parts.results, description="Transcribiendo actualmente..."):
             filename = page.filename
             xml_filename = filename.split('.')[0] + '.xml'
             img_binary = E.get_document_part_image(document.pk, page.pk)
@@ -88,7 +93,8 @@ def main():
     # except Exception as e:
     #     print(f"[bold purple] 💀 Error: {e}[/bold purple]")
     #     raise typer.Exit(code=1)
-    
+
+
 def old_main(path: str = typer.Argument(..., help="Path to the image file"), apikey: str = typer.Option(..., envvar="VISION_KEY", help="Google Vision API Key")):
     """
     🤩 escriptorium-vision 🤩

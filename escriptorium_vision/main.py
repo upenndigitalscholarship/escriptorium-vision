@@ -81,7 +81,6 @@ def main(clear_secrets: bool = typer.Option(False)):
         # Process each page of the selected document
         parts = E.get_document_parts(document.pk)
         for page in track(parts.results, description="Transcribiendo actualmente..."):
-            # TODO assert that the page has been segmented, otherwise no text will post
 
             filename = page.filename
             xml_filename = filename.split(".")[0] + ".xml"
@@ -103,7 +102,6 @@ def main(clear_secrets: bool = typer.Option(False)):
             with ZipFile(BytesIO(alto_xml)) as z:
                 with z.open(z.namelist()[0]) as f:
                     alto_xml = f.read()
-
             merged = merge_vision_alto(vision_response, alto_xml)
             E.upload_part_transcription(
                 document.pk, "vision", xml_filename, merged

@@ -310,7 +310,8 @@ def merge_vision_alto(vision_response: json, alto_xml: str):
     filename = filename.split("/")[-1]
     # find all TextLine elements
     text_lines = alto.findall(".//{http://www.loc.gov/standards/alto/ns-v4#}TextLine")
-    # TODO remove duplicate TextLine elements
+    # assert that the page has been segmented, otherwise no text will post
+    assert len(text_lines) > 0, "Please segment your images in eScriptorium. No TextLine elements found in ALTO XML"
 
     for line in text_lines:
         line_attrib = (

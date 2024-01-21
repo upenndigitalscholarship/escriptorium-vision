@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "escriptorium-transcribir"
+name = "escriptorium-vision"
 version = "0.1.0"
 description = ""
 authors = ["apjanco <apjanco@gmail.com>"]
@@ -14,6 +14,8 @@ typer = {extras = ["all"], version = "^0.9.0"}
 google-api-python-client = "^2.114.0"
 pathlib = "^1.0.1"
 escriptorium-connector = "^0.2.6"
+srsly = "^2.4.8"
+pillow = "^10.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

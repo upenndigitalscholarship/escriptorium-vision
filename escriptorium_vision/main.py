@@ -4,7 +4,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import srsly
 from escriptorium_connector import EscriptoriumConnector
-from util import vision, merge_vision_alto
+from .util import vision, merge_vision_alto
 from zipfile import ZipFile
 import io
 from io import BytesIO
@@ -19,6 +19,7 @@ app = typer.Typer()
 
 
 # add optional argument for --clear-secrets
+@app.callback(invoke_without_command=True)
 def main(clear_secrets: bool = typer.Option(False)):
     """
     🤩 escriptorium-vision 🤩

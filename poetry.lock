@@ -80,6 +80,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "catalogue"
+version = "2.0.10"
+description = "Super lightweight function registries for your library"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "certifi"
 version = "2023.11.17"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -309,6 +317,22 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "pillow"
+version = "10.2.0"
+description = "Python Imaging Library (Fork)"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.extras]
+docs = ["furo", "olefile", "sphinx (>=2.4)", "sphinx-copybutton", "sphinx-inline-tabs", "sphinx-removed-in", "sphinxext-opengraph"]
+fpx = ["olefile"]
+mic = ["olefile"]
+tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
+typing = ["typing-extensions"]
+xmp = ["defusedxml"]
+
+[[package]]
 name = "pluggy"
 version = "0.13.1"
 description = "plugin and hook calling mechanisms for python"
@@ -475,6 +499,17 @@ optional = false
 python-versions = ">=3.8"
 
 [[package]]
+name = "srsly"
+version = "2.4.8"
+description = "Modern high-performance serialization utilities for Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+catalogue = ">=2.0.3,<2.1.0"
+
+[[package]]
 name = "typer"
 version = "0.9.0"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -548,7 +583,7 @@ test = ["websockets"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "eda8fb25e47eee9eef673def763521e3efa16ae2332d8a0e8eeee863c90c40bc"
+content-hash = "b57c1ee8d209b64350af92fe691bc55cc2c9de118c3778c44c0d6eb96ce11ab9"
 
 [metadata.files]
 about-time = []
@@ -558,6 +593,7 @@ attrs = []
 beautifulsoup4 = []
 bs4 = []
 cachetools = []
+catalogue = []
 certifi = []
 charset-normalizer = []
 click = []
@@ -577,6 +613,7 @@ mdurl = []
 more-itertools = []
 packaging = []
 pathlib = []
+pillow = []
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
@@ -600,6 +637,7 @@ rich = []
 rsa = []
 shellingham = []
 soupsieve = []
+srsly = []
 typer = []
 typing-extensions = []
 uritemplate = []

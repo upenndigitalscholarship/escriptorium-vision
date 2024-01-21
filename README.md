@@ -6,39 +6,13 @@ Please note that you will need to create an account for Google Vision and this i
 
 ## Installation:
 
-We'll use Poetry for dependency management. If you don't have it installed, you can do so with:
+Create a virtual environment and install the requirements:
 
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
-```
-You will also need git installed. If you don't have it, you can do so with:
-
-```bash
-sudo apt install git
-```
-
-Then, clone the repository and install the dependencies:
-
-```bash
-git clone https://github.com/upenndigitalscholarship/escriptorium-vision.git
-```
-
-```bash
-cd escriptorium-vision
-```
-
-```bash
-poetry install
-```
-
-```bash
-poetry shell
-```
-
-```bash
-python3 escriptorium_vision/main.py
-```
-
+1. Download the whl file from the [releases page](https://github.com/upenndigitalscholarship/escriptorium-vision/releases) or [here](https://github.com/upenndigitalscholarship/escriptorium-vision/releases/download/escriptorium/escriptorium_vision-0.1.0-py3-none-any.whl)
+2. Install with pip:
+    ```bash 
+    pip install escriptorium_vision-0.1.0-py3-none-any.whl
+    ```
 ## Set Secrets:
 
 The first time that you use this tool, you will be asked for some information. This information will be stored in a file called `secrets.json` in the root directory of the project. You can edit this file at any time to change the information. To delete the file, use the tag `--clear-secrets`.    

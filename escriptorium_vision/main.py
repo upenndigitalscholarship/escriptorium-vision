@@ -3,7 +3,6 @@ from pathlib import Path
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import srsly
-from util import vision, lines_from_paragraphs, find_next_word, vision_to_alto
 from escriptorium_connector import EscriptoriumConnector
 from util import vision, merge_vision_alto
 from zipfile import ZipFile

@@ -20,7 +20,7 @@ app = typer.Typer()
 
 # add optional argument for --clear-secrets
 @app.callback(invoke_without_command=True)
-def main(clear_secrets: bool = typer.Option(False)):
+def main(clear_secrets: bool = typer.Option(False),local_segment: bool = typer.Option(False)):
     """
     🤩 escriptorium-vision 🤩
     A CLI for using Google Vision API to extract text from images and create ALTO XML files.
@@ -94,14 +94,27 @@ def main(clear_secrets: bool = typer.Option(False)):
             image_content = base64.b64encode(img_byte_arr.getvalue())
             vision_response = vision(image_content, secrets["VISION_KEY"])
 
-            # get the alto xml for the page
-            alto_xml = E.download_part_alto_transcription(
-                document.pk, page.pk, transcription_pk
-            )
-            # You will need to unzip these bytes in order to access the XML data (zipfile can do this).
-            with ZipFile(BytesIO(alto_xml)) as z:
-                with z.open(z.namelist()[0]) as f:
-                    alto_xml = f.read()
+            if local_segment:
+                import torch
+                from kraken import blla
+                from kraken import serialization
+
+                # segment the image using kraken
+                if torch.cuda.is_available():
+                    device = 'cuda'
+                else:
+                    device = 'cpu'
+                baseline_seg = blla.segment(rgb_im, device=device)
+                alto_xml = serialization.serialize_segmentation(baseline_seg, image_name=filename, image_size=rgb_im.size, template='alto')
+            else:
+                # get the alto xml for the page
+                alto_xml = E.download_part_alto_transcription(
+                    document.pk, page.pk, transcription_pk
+                )
+                # You will need to unzip these bytes in order to access the XML data (zipfile can do this).
+                with ZipFile(BytesIO(alto_xml)) as z:
+                    with z.open(z.namelist()[0]) as f:
+                        alto_xml = f.read()
             merged = merge_vision_alto(vision_response, alto_xml)
             E.upload_part_transcription(
                 document.pk, "vision", xml_filename, merged

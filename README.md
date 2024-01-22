@@ -13,6 +13,11 @@ Create a virtual environment and install the requirements:
     ```bash 
     pip install escriptorium_vision-0.1.0-py3-none-any.whl
     ```
+3. You can now run the tool with the command `transcribe` in the terminal.
+```bash
+(venv) $ transcribe
+```
+
 ## Set Secrets:
 
 The first time that you use this tool, you will be asked for some information. This information will be stored in a file called `secrets.json` in the root directory of the project. You can edit this file at any time to change the information. To delete the file, use the tag `--clear-secrets`.    

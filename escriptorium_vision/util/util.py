@@ -46,7 +46,7 @@ def get_strings_for_alto_line(
 
     line_words = []
     for response in vision_response["responses"]:
-        for i, annotation in enumerate(response["textAnnotations"]):
+        for i, annotation in enumerate(response.get("textAnnotations", [])):
             if i == 0:
                 full_text = annotation.get("description", None)
                 language = annotation.get("locale", None)

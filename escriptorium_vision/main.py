@@ -4,7 +4,7 @@ from rich import print
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import srsly
 from escriptorium_connector import EscriptoriumConnector
-from .util import vision, merge_vision_alto
+from util import vision, merge_vision_alto
 from zipfile import ZipFile
 import io
 from io import BytesIO
